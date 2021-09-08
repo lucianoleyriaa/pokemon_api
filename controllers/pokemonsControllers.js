@@ -1,12 +1,10 @@
 const axios = require("axios");
-
-const getType = (pokemon) => {
-   return pokemon.types.map((type) => type.type.name);
-};
-
-const getAbilities = (pokemon) => {
-   return pokemon.abilities.map((ability) => ability.ability.name);
-};
+const {
+   getType,
+   getDescription,
+   getAbilities,
+   getMoves,
+} = require("../utils/functionalities");
 
 exports.getPokemons = async (req, res) => {
    try {
@@ -48,12 +46,32 @@ exports.getPokemons = async (req, res) => {
 
 exports.getPokemonDetail = async (req, res) => {
    try {
+      let pokemonDetail = {};
       const pokemonId = req.params.id;
 
-      console.log(pokemonId);
+      const pokemon = await axios({
+         method: "GET",
+         url: `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
+      });
+
+      const pokemonDescription = await axios({
+         method: "GET",
+         url: `https://pokeapi.co/api/v2/characteristic/${pokemonId}`,
+      });
+
+      pokemonDetail.name = pokemon.data.name;
+      pokemonDetail.type = getType(pokemon.data);
+      pokemonDetail.weight = pokemon.data.weight;
+      pokemonDetail.photo = pokemon.data.sprites.front_default;
+      pokemonDetail.abilities = getAbilities(pokemon.data);
+      pokemonDetail.description = getDescription(
+         pokemonDescription.data.descriptions
+      );
+      pokemonDetail.moves = getMoves(pokemon.data.moves);
 
       res.status(200).json({
          status: "Success",
+         pokemon: pokemonDetail,
       });
    } catch (e) {
       res.status(400).json({
