@@ -8,11 +8,15 @@ const {
 
 exports.getPokemons = async (req, res) => {
    try {
+      const { limit, offset } = req.query;
+      const url = `https://pokeapi.co/api/v2/pokemon?limit=${
+         limit ? limit : 10
+      }&offset=${offset ? offset : 0}`;
       let allPokemons = [];
 
       const pokemons = await axios({
          method: "GET",
-         url: "https://pokeapi.co/api/v2/pokemon?limit=10&offset=0",
+         url,
       });
 
       allPokemons = pokemons.data.results.map((pokemon) => {
@@ -27,6 +31,7 @@ exports.getPokemons = async (req, res) => {
             url: `https://pokeapi.co/api/v2/pokemon/${pokemonsName[i]}`,
          });
 
+         allPokemons[i].id = pokemonDetail.data.id;
          allPokemons[i].type = getType(pokemonDetail.data);
          allPokemons[i].weight = pokemonDetail.data.weight;
          allPokemons[i].photo = pokemonDetail.data.sprites.front_default;
